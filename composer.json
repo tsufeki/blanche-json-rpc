@@ -1,0 +1,31 @@
+{
+    "name": "tsufeki/blanche-json-rpc",
+    "description": "Async JSON-RPC library for Recoil PHP",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "tsufeki",
+            "email": "tsufeki@ymail.com"
+        }
+    ],
+    "require": {
+        "recoil/api": "^1.0",
+        "tsufeki/kayo-json-mapper": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5",
+        "phpstan/phpstan": "^0.9.1",
+        "phpstan/phpstan-phpunit": "^0.9.1",
+        "php-coveralls/php-coveralls": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tsufeki\\BlancheJsonRpc\\": "src/Tsufeki/BlancheJsonRpc/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Tsufeki\\BlancheJsonRpc\\": "tests/Tsufeki/BlancheJsonRpc/"
+        }
+    }
+}
