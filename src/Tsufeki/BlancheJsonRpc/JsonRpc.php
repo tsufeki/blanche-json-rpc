@@ -7,9 +7,11 @@ use Recoil\Recoil;
 use Tsufeki\BlancheJsonRpc\Dispatcher\Dispatcher;
 use Tsufeki\BlancheJsonRpc\Exception\JsonRpcException;
 use Tsufeki\BlancheJsonRpc\Message\Error;
+use Tsufeki\BlancheJsonRpc\Message\ErrorResponse;
 use Tsufeki\BlancheJsonRpc\Message\Notification;
 use Tsufeki\BlancheJsonRpc\Message\Request;
 use Tsufeki\BlancheJsonRpc\Message\Response;
+use Tsufeki\BlancheJsonRpc\Message\ResultResponse;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
 use Tsufeki\BlancheJsonRpc\Transport\TransportMessageObserver;
 use Tsufeki\KayoJsonMapper\Mapper;
@@ -74,10 +76,10 @@ class JsonRpc implements TransportMessageObserver
         $this->pendingRequests[$request->id] = yield Recoil::strand();
         yield Recoil::execute($this->transport->send($serializedRequest));
 
-        /** @var Response $response */
+        /** @var ResultResponse|ErrorResponse $response */
         $response = yield Recoil::suspend();
 
-        if ($response->error !== null) {
+        if ($response instanceof ErrorResponse) {
             // TODO
             throw new JsonRpcException();
         }
@@ -107,7 +109,13 @@ class JsonRpc implements TransportMessageObserver
     public function receive(string $serializedMessage): \Generator
     {
         // TODO batch requests
-        $messageType = implode('|', [Request::class, Notification::class, Response::class]);
+        $messageType = implode('|', [
+            Request::class,
+            Notification::class,
+            ResultResponse::class,
+            ErrorResponse::class,
+        ]);
+
         // TODO catch exceptions
         $message = $this->mapper->load(Json::decode($serializedMessage), $messageType);
 
@@ -135,17 +143,19 @@ class JsonRpc implements TransportMessageObserver
 
     private function handleRequest(Request $request): \Generator
     {
-        $response = new Response();
-        $response->id = $request->id;
-
         try {
-            $response->result = yield $this->dispatcher->dispatchRequest($request->method, $request->params);
+            $result = yield $this->dispatcher->dispatchRequest($request->method, $request->params);
+
+            $response = new ResultResponse();
+            $response->result = $result;
         } catch (\Throwable $e) {
             // TODO
+            $response = new ErrorResponse();
             $response->error = new Error();
         }
 
         // TODO catch exceptions
+        $response->id = $request->id;
         $serializedResponse = Json::encode($this->mapper->dump($response));
         yield $this->transport->send($serializedResponse);
     }

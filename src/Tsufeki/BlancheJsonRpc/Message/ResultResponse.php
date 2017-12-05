@@ -2,10 +2,10 @@
 
 namespace Tsufeki\BlancheJsonRpc\Message;
 
-class Response extends Message
+class ResultResponse extends Response
 {
     /**
-     * @var string|int|float|null
+     * @var mixed|null
      */
-    public $id;
+    public $result;
 }

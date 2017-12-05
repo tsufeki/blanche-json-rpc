@@ -2,10 +2,10 @@
 
 namespace Tsufeki\BlancheJsonRpc\Message;
 
-class Response extends Message
+class ErrorResponse extends Response
 {
     /**
-     * @var string|int|float|null
+     * @var Error|null
      */
-    public $id;
+    public $error;
 }
