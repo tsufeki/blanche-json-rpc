@@ -127,9 +127,9 @@ class JsonRpc implements TransportMessageObserver
             if (empty($message)) {
                 $response = new ErrorResponse(null, new InvalidRequestException());
             } elseif (is_array($message)) {
-                $response = yield Recoil::all(...array_map(function (Message $m) {
+                $response = yield array_map(function (Message $m) {
                     return $this->handleMessage($m);
-                }, $message));
+                }, $message);
 
                 $response = array_filter($response);
             } else {
