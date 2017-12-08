@@ -4,4 +4,26 @@ namespace Tsufeki\BlancheJsonRpc\Exception;
 
 class JsonRpcException extends \Exception
 {
+    const CODE_MIN = 0;
+    const CODE_MAX = 0;
+    const MESSAGE = 'Error';
+
+    /**
+     * @var mixed
+     */
+    protected $data;
+
+    public function __construct(string $message = null, int $code = null, $data = null)
+    {
+        parent::__construct($message ?? static::MESSAGE, $code ?? static::CODE_MAX);
+        $this->data = $data;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
 }

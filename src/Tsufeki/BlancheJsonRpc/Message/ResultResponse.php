@@ -5,7 +5,17 @@ namespace Tsufeki\BlancheJsonRpc\Message;
 class ResultResponse extends Response
 {
     /**
-     * @var mixed|null
+     * @var mixed
      */
     public $result;
+
+    /**
+     * @param string|int|float|null $id
+     * @param mixed                 $result
+     */
+    public function __construct($id, $result = null)
+    {
+        $this->id = $id;
+        $this->result = $result;
+    }
 }

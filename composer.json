@@ -10,7 +10,8 @@
     ],
     "require": {
         "recoil/api": "^1.0",
-        "tsufeki/kayo-json-mapper": "dev-master"
+        "tsufeki/kayo-json-mapper": "dev-master",
+        "phpdocumentor/type-resolver": "dev-master as 0.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.5",
