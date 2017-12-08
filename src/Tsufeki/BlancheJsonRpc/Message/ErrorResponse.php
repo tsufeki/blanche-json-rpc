@@ -14,9 +14,11 @@ class ErrorResponse extends Response
     /**
      * @param string|int|float|null $id
      */
-    public function __construct($id, JsonRpcException $error)
+    public function __construct($id = null, JsonRpcException $error = null)
     {
         $this->id = $id;
-        $this->error = $error;
+        if ($error !== null) {
+            $this->error = $error;
+        }
     }
 }

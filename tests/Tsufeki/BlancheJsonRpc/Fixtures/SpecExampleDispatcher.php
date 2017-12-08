@@ -36,7 +36,25 @@ class SpecExampleDispatcher implements Dispatcher
         return $minuend - $subtrahend;
     }
 
-    public function update(array $a)
+    public function update(...$a)
     {
+    }
+
+    public function sum(int ...$a): int
+    {
+        return array_sum($a);
+    }
+
+    public function notify_hello(int $a)
+    {
+    }
+
+    public function notify_sum(int ...$a)
+    {
+    }
+
+    public function get_data(): array
+    {
+        return ['hello', 5];
     }
 }

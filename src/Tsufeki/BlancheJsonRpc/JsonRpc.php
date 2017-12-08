@@ -110,24 +110,16 @@ class JsonRpc implements TransportMessageObserver
      */
     public function receive(string $serializedMessage): \Generator
     {
-        $messageType = implode('|', [
-            Request::class,
-            Notification::class,
-            ResultResponse::class,
-            ErrorResponse::class,
-        ]);
-        $batchType = $messageType . '|(' . $messageType . ')[]';
-
         /** @var Response|Response[]|null $response */
         $response = null;
 
         try {
-            /** @var Message|Message[] $message */
-            $message = $this->mapper->load(Json::decode($serializedMessage), $batchType);
+            $message = Json::decode($serializedMessage);
+
             if (empty($message)) {
                 $response = new ErrorResponse(null, new InvalidRequestException());
             } elseif (is_array($message)) {
-                $response = yield array_map(function (Message $m) {
+                $response = yield array_map(function ($m) {
                     return $this->handleMessage($m);
                 }, $message);
 
@@ -137,8 +129,6 @@ class JsonRpc implements TransportMessageObserver
             }
         } catch (JsonException $e) {
             $response = new ErrorResponse(null, new ParseException());
-        } catch (MapperException $e) {
-            $response = new ErrorResponse(null, new InvalidRequestException());
         }
 
         if (!empty($response)) {
@@ -148,10 +138,26 @@ class JsonRpc implements TransportMessageObserver
     }
 
     /**
+     * @param mixed $messageData
+     *
      * @resolve Response|null
      */
-    private function handleMessage(Message $message): \Generator
+    private function handleMessage($messageData): \Generator
     {
+        $messageType = implode('|', [
+            Notification::class,
+            Request::class,
+            ResultResponse::class,
+            ErrorResponse::class,
+        ]);
+
+        try {
+            /** @var Message $message */
+            $message = $this->mapper->load($messageData, $messageType);
+        } catch (MapperException $e) {
+            return new ErrorResponse(null, new InvalidRequestException());
+        }
+
         if ($message instanceof Response) {
             return yield $this->handleResponse($message);
         }
@@ -208,7 +214,7 @@ class JsonRpc implements TransportMessageObserver
             ->addDumper(new ExceptionDumper())
             ->addLoader(new ExceptionLoader())
             ->throwOnUnknownProperty(true)
-            ->throwOnMissingProperty(true)
+            ->throwOnMissingProperty(false)
             ->getMapper();
 
         $idSequence = (function (): \Generator {

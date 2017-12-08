@@ -13,7 +13,7 @@ class ResultResponse extends Response
      * @param string|int|float|null $id
      * @param mixed                 $result
      */
-    public function __construct($id, $result = null)
+    public function __construct($id = null, $result = null)
     {
         $this->id = $id;
         $this->result = $result;
