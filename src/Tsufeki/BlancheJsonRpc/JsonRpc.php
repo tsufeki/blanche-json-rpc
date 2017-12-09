@@ -123,7 +123,7 @@ class JsonRpc implements TransportMessageObserver
                     return $this->handleMessage($m);
                 }, $message);
 
-                $response = array_filter($response);
+                $response = array_values(array_filter($response));
             } else {
                 $response = yield $this->handleMessage($message);
             }
