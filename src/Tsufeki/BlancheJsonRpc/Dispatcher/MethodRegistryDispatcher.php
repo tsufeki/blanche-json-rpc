@@ -31,8 +31,10 @@ class MethodRegistryDispatcher implements Dispatcher
     {
         $callables = $this->methodRegistry->getMethodsForNotification($methodName);
 
-        return yield array_map(function (callable $callable) use ($args) {
-            $this->invoker->invoke($callable, $args);
-        }, $callables);
+        if (!empty($callables)) {
+            yield array_map(function (callable $callable) use ($args) {
+                $this->invoker->invoke($callable, $args);
+            }, $callables);
+        }
     }
 }

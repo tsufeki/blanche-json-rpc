@@ -5,8 +5,10 @@ namespace Tests\Tsufeki\BlancheJsonRpc;
 use PHPUnit\Framework\Constraint\JsonMatches;
 use PHPUnit\Framework\TestCase;
 use Recoil\React\ReactKernel;
-use Tests\Tsufeki\BlancheJsonRpc\Fixtures\SpecExampleDispatcher;
+use Tests\Tsufeki\BlancheJsonRpc\Fixtures\SpecExampleMethods;
+use Tsufeki\BlancheJsonRpc\Dispatcher\SimpleMethodRegistry;
 use Tsufeki\BlancheJsonRpc\JsonRpc;
+use Tsufeki\BlancheJsonRpc\Protocol;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
 
 /**
@@ -19,17 +21,34 @@ class SpecExampleTest extends TestCase
      */
     public function test_server(string $request, string $response = null)
     {
+        /** @var Protocol $protocol */
+        $protocol = null;
+
         $transport = $this->createMock(Transport::class);
         $transport
             ->expects($response !== null ? $this->once() : $this->never())
             ->method('send')
             ->with(new JsonMatches($response ?? ''));
+        $transport
+            ->expects($this->once())
+            ->method('attach')
+            ->willReturnCallback(function (Protocol $proto) use (&$protocol) {
+                $protocol = $proto;
+            });
 
-        $dispatcher = new SpecExampleDispatcher();
-        $rpc = JsonRpc::create($transport, $dispatcher);
+        $registry = new SimpleMethodRegistry();
+        $methods = new SpecExampleMethods();
+        foreach ($methods->getRequests() as $req) {
+            $registry->setMethodForRequest($req, [$methods, $req]);
+        }
+        foreach ($methods->getNotifications() as $notification) {
+            $registry->addMethodForNotification($notification, [$methods, $notification]);
+        }
 
-        ReactKernel::start(function () use ($rpc, $request) {
-            yield $rpc->receive($request);
+        $rpc = JsonRpc::create($transport, $registry);
+
+        ReactKernel::start(function () use ($protocol, $request) {
+            yield $protocol->receive($request);
         });
     }
 

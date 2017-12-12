@@ -26,7 +26,7 @@ class MapperInvoker implements Invoker
             throw new InvalidParamsException();
         }
 
-        $result = $callable(...$args);
+        $result = $callable(...$mappedArgs);
 
         if ($result instanceof \Generator) {
             $result = yield $result;
