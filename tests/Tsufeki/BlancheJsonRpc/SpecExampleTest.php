@@ -12,7 +12,7 @@ use Tsufeki\BlancheJsonRpc\Protocol;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
 
 /**
- * @coversNothing
+ * @covers \Tsufeki\BlancheJsonRpc\Protocol
  */
 class SpecExampleTest extends TestCase
 {

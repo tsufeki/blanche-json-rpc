@@ -38,6 +38,7 @@ class MapperInvokerTest extends TestCase
 
         $invoker = new MapperInvoker($mapper);
 
+        /** @var mixed $result */
         $result = null;
         ReactKernel::start(function () use ($invoker, $callable, $args, &$result) {
             $result = yield $invoker->invoke($callable, $args);
@@ -49,9 +50,12 @@ class MapperInvokerTest extends TestCase
     public function callable_data(): array
     {
         return [
-            [function ($x) { return $x . 'bar'; }],
+            [function ($x) {
+                return $x . 'bar';
+            }],
             [function ($x) {
                 yield;
+
                 return $x . 'bar';
             }],
         ];

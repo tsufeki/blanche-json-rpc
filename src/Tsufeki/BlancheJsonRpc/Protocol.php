@@ -71,7 +71,8 @@ class Protocol implements TransportMessageObserver
     public function call(string $method, $args): \Generator
     {
         $request = new Request();
-        $request->id = next($this->idSequence);
+        $request->id = $this->idSequence->current();
+        $this->idSequence->next();
         $request->method = $method;
         $request->params = $args;
 
