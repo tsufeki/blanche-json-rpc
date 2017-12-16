@@ -2,6 +2,7 @@
 
 namespace Tsufeki\BlancheJsonRpc;
 
+use Psr\Log\LoggerInterface;
 use Tsufeki\BlancheJsonRpc\Dispatcher\MapperInvoker;
 use Tsufeki\BlancheJsonRpc\Dispatcher\MethodRegistry;
 use Tsufeki\BlancheJsonRpc\Dispatcher\MethodRegistryDispatcher;
@@ -55,14 +56,15 @@ class JsonRpc
     public static function create(
         Transport $transport,
         MethodRegistry $methodRegistry,
-        Mapper $mapper = null
+        Mapper $mapper = null,
+        LoggerInterface $logger = null
     ): self {
         $mapper = $mapper ?? MapperBuilder::create()
             ->getMapper();
 
         $invoker = new MapperInvoker($mapper);
         $dispatcher = new MethodRegistryDispatcher($methodRegistry, $invoker);
-        $protocol = Protocol::create($transport, $dispatcher);
+        $protocol = Protocol::create($transport, $dispatcher, $logger);
 
         return new static($protocol, $mapper);
     }

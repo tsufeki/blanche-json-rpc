@@ -2,6 +2,8 @@
 
 namespace Tsufeki\BlancheJsonRpc;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Recoil\Listener;
 use Recoil\Recoil;
 use Tsufeki\BlancheJsonRpc\Dispatcher\Dispatcher;
@@ -48,16 +50,27 @@ class Protocol implements TransportMessageObserver
     private $idSequence;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var Listener[]
      */
     private $pendingRequests = [];
 
-    public function __construct(Transport $transport, Dispatcher $dispatcher, Mapper $mapper, \Iterator $idSequence)
-    {
+    public function __construct(
+        Transport $transport,
+        Dispatcher $dispatcher,
+        Mapper $mapper,
+        \Iterator $idSequence,
+        LoggerInterface $logger = null
+    ) {
         $this->transport = $transport;
         $this->dispatcher = $dispatcher;
         $this->mapper = $mapper;
         $this->idSequence = $idSequence;
+        $this->logger = $logger ?? new NullLogger();
 
         $this->transport->attach($this);
     }
@@ -176,7 +189,8 @@ class Protocol implements TransportMessageObserver
         if ($pendingRequest) {
             unset($this->pendingRequests[$response->id]);
             $pendingRequest->send($response);
-            // TODO else
+        } else {
+            $this->logger->error('[jsonrpc] Cannot match response to request');
         }
 
         return;
@@ -193,7 +207,7 @@ class Protocol implements TransportMessageObserver
             $response = new ErrorResponse($request->id, $e);
         } catch (\Throwable $e) {
             $response = new ErrorResponse($request->id, new ServerException());
-            // TODO log
+            $this->logger->critical('[jsonrpc] Error during dispatcheing a request', ['exception' => $e]);
         }
 
         return $response;
@@ -204,12 +218,15 @@ class Protocol implements TransportMessageObserver
         try {
             yield $this->dispatcher->dispatchNotification($notification->method, $notification->params);
         } catch (\Throwable $e) {
-            // TODO log
+            $this->logger->critical('[jsonrpc] Error during dispatche=ing a notification', ['exception' => $e]);
         }
     }
 
-    public static function create(Transport $transport, Dispatcher $dispatcher): self
-    {
+    public static function create(
+        Transport $transport,
+        Dispatcher $dispatcher,
+        LoggerInterface $logger = null
+    ): self {
         $mapper = MapperBuilder::create()
             ->setNameMangler(new NullNameMangler())
             ->addDumper(new ExceptionDumper())
@@ -224,6 +241,12 @@ class Protocol implements TransportMessageObserver
             }
         })();
 
-        return new static($transport, $dispatcher, $mapper, $idSequence);
+        return new static(
+            $transport,
+            $dispatcher,
+            $mapper,
+            $idSequence,
+            $logger
+        );
     }
 }
