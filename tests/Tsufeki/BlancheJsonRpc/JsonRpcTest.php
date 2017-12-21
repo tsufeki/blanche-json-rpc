@@ -7,14 +7,30 @@ use PHPUnit\Framework\TestCase;
 use Recoil\React\ReactKernel;
 use Tsufeki\BlancheJsonRpc\Dispatcher\Dispatcher;
 use Tsufeki\BlancheJsonRpc\Exception\JsonRpcException;
-use Tsufeki\BlancheJsonRpc\Protocol;
+use Tsufeki\BlancheJsonRpc\JsonRpc;
+use Tsufeki\BlancheJsonRpc\Mapper\MapperFactory;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
 
 /**
- * @covers \Tsufeki\BlancheJsonRpc\Protocol
+ * @covers \Tsufeki\BlancheJsonRpc\JsonRpc
+ * @covers \Tsufeki\BlancheJsonRpc\Mapper\MapperFactory
  */
-class ProtocolTest extends TestCase
+class JsonRpcTest extends TestCase
 {
+    private function getJsonRpc(Transport $transport, Dispatcher $dispatcher): JsonRpc
+    {
+        return new JsonRpc(
+            $transport,
+            $dispatcher,
+            (new MapperFactory())->create(),
+            (function (): \Generator {
+                for ($i = 1;; $i++) {
+                    yield $i;
+                }
+            })()
+        );
+    }
+
     public function test_sends_notification()
     {
         ReactKernel::start(function () {
@@ -26,9 +42,9 @@ class ProtocolTest extends TestCase
                 ->willReturn((function () { yield; })());
 
             $dispatcher = $this->createMock(Dispatcher::class);
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->notify('foo', [1, 2]);
+            yield $rpc->notify('foo', [1, 2]);
         });
     }
 
@@ -40,14 +56,14 @@ class ProtocolTest extends TestCase
                 ->expects($this->once())
                 ->method('send')
                 ->with(new JsonMatches('{"jsonrpc": "2.0", "id": 1, "method": "foo", "params": [1, 2]}'))
-                ->willReturn((function () use (&$proto) {
-                    yield $proto->receive('{"jsonrpc": "2.0", "id": 1, "result": 42}');
+                ->willReturn((function () use (&$rpc) {
+                    yield $rpc->receive('{"jsonrpc": "2.0", "id": 1, "result": 42}');
                 })());
 
             $dispatcher = $this->createMock(Dispatcher::class);
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            $result = yield $proto->call('foo', [1, 2]);
+            $result = yield $rpc->call('foo', [1, 2]);
 
             $this->assertSame(42, $result);
         });
@@ -61,15 +77,15 @@ class ProtocolTest extends TestCase
                 ->expects($this->once())
                 ->method('send')
                 ->with(new JsonMatches('{"jsonrpc": "2.0", "id": 1, "method": "foo", "params": [1, 2]}'))
-                ->willReturn((function () use (&$proto) {
-                    yield $proto->receive('{"jsonrpc": "2.0", "id": 1, "error": {"code": 84, "message": "bar"}}');
+                ->willReturn((function () use (&$rpc) {
+                    yield $rpc->receive('{"jsonrpc": "2.0", "id": 1, "error": {"code": 84, "message": "bar"}}');
                 })());
 
             $dispatcher = $this->createMock(Dispatcher::class);
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
             $this->expectException(JsonRpcException::class);
-            yield $proto->call('foo', [1, 2]);
+            yield $rpc->call('foo', [1, 2]);
         });
     }
 
@@ -87,9 +103,9 @@ class ProtocolTest extends TestCase
                 ->method('dispatchNotification')
                 ->with($this->identicalTo('fooBar'), $this->identicalTo([1, 2]));
 
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->receive('{"jsonrpc": "2.0", "method": "fooBar", "params": [1, 2]}');
+            yield $rpc->receive('{"jsonrpc": "2.0", "method": "fooBar", "params": [1, 2]}');
         });
     }
 
@@ -107,9 +123,9 @@ class ProtocolTest extends TestCase
                 ->method('dispatchNotification')
                 ->willThrowException(new \Exception());
 
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->receive('{"jsonrpc": "2.0", "method": "fooBar", "params": [1, 2]}');
+            yield $rpc->receive('{"jsonrpc": "2.0", "method": "fooBar", "params": [1, 2]}');
             $this->assertTrue(true);
         });
     }
@@ -135,9 +151,9 @@ class ProtocolTest extends TestCase
                     return 42;
                 })());
 
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->receive('{"jsonrpc": "2.0", "id": 7, "method": "fooBar", "params": [1, 2]}');
+            yield $rpc->receive('{"jsonrpc": "2.0", "id": 7, "method": "fooBar", "params": [1, 2]}');
         });
     }
 
@@ -152,9 +168,9 @@ class ProtocolTest extends TestCase
                 ->willReturn((function () { yield; })());
 
             $dispatcher = $this->createMock(Dispatcher::class);
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->receive('{"qaz');
+            yield $rpc->receive('{"qaz');
         });
     }
 
@@ -184,9 +200,9 @@ class ProtocolTest extends TestCase
                 ->with($this->identicalTo('bar'), $this->identicalTo([true]))
                 ->willReturn((function () { yield; })());
 
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->receive('[
+            yield $rpc->receive('[
                 {"jsonrpc": "2.0", "id": 7, "method": "foo", "params": [1, 2]},
                 {"jsonrpc": "2.0", "method": "bar", "params": [true]}
             ]');
@@ -214,9 +230,9 @@ class ProtocolTest extends TestCase
                     throw new \Exception();
                 })());
 
-            $proto = Protocol::create($transport, $dispatcher);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
-            yield $proto->receive('{"jsonrpc": "2.0", "id": 7, "method": "fooBar", "params": [1, 2]}');
+            yield $rpc->receive('{"jsonrpc": "2.0", "id": 7, "method": "fooBar", "params": [1, 2]}');
         });
     }
 }

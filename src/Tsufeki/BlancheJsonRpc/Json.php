@@ -26,7 +26,10 @@ final class Json
         return $result;
     }
 
+    // @codeCoverageIgnoreStart
     private function __construct()
     {
     }
+
+    // @codeCoverageIgnoreEnd
 }

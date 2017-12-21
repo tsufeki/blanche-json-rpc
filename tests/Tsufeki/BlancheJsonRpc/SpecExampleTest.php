@@ -8,11 +8,11 @@ use Recoil\React\ReactKernel;
 use Tests\Tsufeki\BlancheJsonRpc\Fixtures\SpecExampleMethods;
 use Tsufeki\BlancheJsonRpc\Dispatcher\SimpleMethodRegistry;
 use Tsufeki\BlancheJsonRpc\JsonRpc;
-use Tsufeki\BlancheJsonRpc\Protocol;
+use Tsufeki\BlancheJsonRpc\MappedJsonRpc;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
 
 /**
- * @covers \Tsufeki\BlancheJsonRpc\Protocol
+ * @covers \Tsufeki\BlancheJsonRpc\JsonRpc
  */
 class SpecExampleTest extends TestCase
 {
@@ -21,8 +21,8 @@ class SpecExampleTest extends TestCase
      */
     public function test_server(string $request, string $response = null)
     {
-        /** @var Protocol $protocol */
-        $protocol = null;
+        /** @var JsonRpc $rpc */
+        $rpc = null;
 
         $transport = $this->createMock(Transport::class);
         $transport
@@ -32,8 +32,8 @@ class SpecExampleTest extends TestCase
         $transport
             ->expects($this->once())
             ->method('attach')
-            ->willReturnCallback(function (Protocol $proto) use (&$protocol) {
-                $protocol = $proto;
+            ->willReturnCallback(function (JsonRpc $r) use (&$rpc) {
+                $rpc = $r;
             });
 
         $registry = new SimpleMethodRegistry();
@@ -45,10 +45,10 @@ class SpecExampleTest extends TestCase
             $registry->addMethodForNotification($notification, [$methods, $notification]);
         }
 
-        $rpc = JsonRpc::create($transport, $registry);
+        $mrpc = MappedJsonRpc::create($transport, $registry);
 
-        ReactKernel::start(function () use ($protocol, $request) {
-            yield $protocol->receive($request);
+        ReactKernel::start(function () use ($rpc, $request) {
+            yield $rpc->receive($request);
         });
     }
 

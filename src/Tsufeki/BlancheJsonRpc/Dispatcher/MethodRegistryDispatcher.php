@@ -33,7 +33,7 @@ class MethodRegistryDispatcher implements Dispatcher
 
         if (!empty($callables)) {
             yield array_map(function (callable $callable) use ($args) {
-                $this->invoker->invoke($callable, $args);
+                return $this->invoker->invoke($callable, $args);
             }, $callables);
         }
     }
