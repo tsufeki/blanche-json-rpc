@@ -17,6 +17,11 @@ class SimpleMethodRegistry implements MethodRegistry
     private $notifications = [];
 
     /**
+     * @var callable|null
+     */
+    private $defaultRequest = null;
+
+    /**
      * @param string   $methodName
      * @param callable $callable   Plain callable or async generator.
      *
@@ -29,13 +34,26 @@ class SimpleMethodRegistry implements MethodRegistry
         return $this;
     }
 
+    /**
+     * @param callable|null $callable
+     *
+     * @return $this
+     */
+    public function setDefaultRequestMethod(callable $callable = null): self
+    {
+        $this->defaultRequest = $callable;
+
+        return $this;
+    }
+
     public function getMethodForRequest(string $methodName): callable
     {
-        if (!isset($this->requests[$methodName])) {
+        $method = $this->requests[$methodName] ?? $this->defaultRequest;
+        if ($method === null) {
             throw new MethodNotFoundException();
         }
 
-        return $this->requests[$methodName];
+        return $method;
     }
 
     /**

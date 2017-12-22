@@ -21,6 +21,16 @@ class SimpleMethodRegistryTest extends TestCase
         $this->assertSame($callable, $registry->getMethodForRequest('foo'));
     }
 
+    public function test_returns_default_request()
+    {
+        $callable = function () {};
+        $registry = new SimpleMethodRegistry();
+
+        $registry->setDefaultRequestMethod($callable);
+
+        $this->assertSame($callable, $registry->getMethodForRequest('foo'));
+    }
+
     public function test_throws_request_on_unknown_request()
     {
         $registry = new SimpleMethodRegistry();
