@@ -3,6 +3,7 @@
 namespace Tests\Tsufeki\BlancheJsonRpc\Dispatcher;
 
 use PHPUnit\Framework\TestCase;
+use Tsufeki\BlancheJsonRpc\Dispatcher\MethodProvider;
 use Tsufeki\BlancheJsonRpc\Dispatcher\SimpleMethodRegistry;
 use Tsufeki\BlancheJsonRpc\Exception\MethodNotFoundException;
 
@@ -55,5 +56,39 @@ class SimpleMethodRegistryTest extends TestCase
         $registry = new SimpleMethodRegistry();
 
         $this->assertSame([], $registry->getMethodsForNotification('foo'));
+    }
+
+    public function test_adds_from_provider()
+    {
+        $provider = new class() implements MethodProvider {
+            public function getRequests(): array
+            {
+                return ['foo' => 'fooFoo'];
+            }
+
+            public function getNotifications(): array
+            {
+                return ['bar' => 'barBar', 'baz' => ['bazBaz']];
+            }
+
+            public function fooFoo()
+            {
+            }
+
+            public function barBar()
+            {
+            }
+
+            public function bazBaz()
+            {
+            }
+        };
+
+        $registry = new SimpleMethodRegistry();
+        $registry->addProvider($provider);
+
+        $this->assertSame([$provider, 'fooFoo'], $registry->getMethodForRequest('foo'));
+        $this->assertSame([[$provider, 'barBar']], $registry->getMethodsForNotification('bar'));
+        $this->assertSame([[$provider, 'bazBaz']], $registry->getMethodsForNotification('baz'));
     }
 }
