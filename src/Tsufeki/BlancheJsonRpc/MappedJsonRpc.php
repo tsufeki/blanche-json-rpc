@@ -38,7 +38,7 @@ class MappedJsonRpc
      */
     public function call(string $method, $args = [], string $returnType = 'mixed'): \Generator
     {
-        $result = yield $this->rpc->call($method, $args);
+        $result = yield $this->rpc->call($method, $this->mapper->dump($args));
 
         return $this->mapper->load($result, $returnType);
     }
@@ -51,7 +51,7 @@ class MappedJsonRpc
      */
     public function notify(string $method, $args): \Generator
     {
-        yield $this->rpc->notify($method, $args);
+        yield $this->rpc->notify($method, $this->mapper->dump($args));
     }
 
     public static function create(
