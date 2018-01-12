@@ -9,6 +9,11 @@ use Tsufeki\KayoJsonMapper\Exception\UnsupportedTypeException;
 
 class ExceptionDumper implements Dumper
 {
+    public function getSupportedTypes(): array
+    {
+        return ['object'];
+    }
+
     public function dump($value, Context $context)
     {
         if (!is_object($value) || !($value instanceof JsonRpcException)) {

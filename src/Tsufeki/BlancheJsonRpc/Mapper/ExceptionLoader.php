@@ -26,6 +26,11 @@ class ExceptionLoader implements Loader
         ServerException::class,
     ];
 
+    public function getSupportedTypes(): array
+    {
+        return ['object'];
+    }
+
     public function load($data, Type $type, Context $context)
     {
         if ((string)$type !== '\\' . JsonRpcException::class) {

@@ -1,3 +1,7 @@
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+    ignoreErrors:
+        - '~Parameter #2 \$type of method Tsufeki\\BlancheJsonRpc\\.*Loader::load\(\) expects phpDocumentor\\Reflection\\Type, phpDocumentor\\Reflection\\Type\|null given~'
