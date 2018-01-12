@@ -10,7 +10,7 @@
     ],
     "require": {
         "recoil/api": "^1.0",
-        "tsufeki/kayo-json-mapper": "dev-master",
+        "tsufeki/kayo-json-mapper": "^0.2",
         "psr/log": "^1.0"
     },
     "require-dev": {
