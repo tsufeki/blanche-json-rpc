@@ -109,6 +109,46 @@ class JsonRpcTest extends TestCase
         });
     }
 
+    public function test_receives_notification_with_missing_params()
+    {
+        ReactKernel::start(function () {
+            $transport = $this->createMock(Transport::class);
+            $transport
+                ->expects($this->never())
+                ->method('send');
+
+            $dispatcher = $this->createMock(Dispatcher::class);
+            $dispatcher
+                ->expects($this->once())
+                ->method('dispatchNotification')
+                ->with($this->identicalTo('fooBar'), $this->identicalTo([]));
+
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
+
+            yield $rpc->receive('{"jsonrpc": "2.0", "method": "fooBar"}');
+        });
+    }
+
+    public function test_receives_notification_with_null_params()
+    {
+        ReactKernel::start(function () {
+            $transport = $this->createMock(Transport::class);
+            $transport
+                ->expects($this->never())
+                ->method('send');
+
+            $dispatcher = $this->createMock(Dispatcher::class);
+            $dispatcher
+                ->expects($this->once())
+                ->method('dispatchNotification')
+                ->with($this->identicalTo('fooBar'), $this->identicalTo([]));
+
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
+
+            yield $rpc->receive('{"jsonrpc": "2.0", "method": "fooBar", "params": null}');
+        });
+    }
+
     public function test_ignores_notification_error()
     {
         ReactKernel::start(function () {
