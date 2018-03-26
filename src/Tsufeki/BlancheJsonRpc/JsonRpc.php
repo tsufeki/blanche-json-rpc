@@ -131,6 +131,7 @@ class JsonRpc implements TransportMessageObserver
             $message = Json::decode($serializedMessage);
 
             if (empty($message)) {
+                $this->logger->notice('[jsonrpc] Empty message received');
                 $response = new ErrorResponse(null, new InvalidRequestException());
             } elseif (is_array($message)) {
                 $response = yield array_map(function ($m) {
@@ -142,6 +143,7 @@ class JsonRpc implements TransportMessageObserver
                 $response = yield $this->handleMessage($message);
             }
         } catch (JsonException $e) {
+            $this->logger->notice('[jsonrpc] Malformed JSON received');
             $response = new ErrorResponse(null, new ParseException());
         }
 
@@ -169,6 +171,8 @@ class JsonRpc implements TransportMessageObserver
             /** @var Message $message */
             $message = $this->mapper->load($messageData, $messageType);
         } catch (MapperException $e) {
+            $this->logger->notice('[jsonrpc] Malformed message received');
+
             return new ErrorResponse(null, new InvalidRequestException());
         }
 
@@ -206,10 +210,11 @@ class JsonRpc implements TransportMessageObserver
 
             $response = new ResultResponse($request->id, $result);
         } catch (JsonRpcException $e) {
+            $this->logger->notice('[jsonrpc] Error during dispatching a request', ['exception' => $e]);
             $response = new ErrorResponse($request->id, $e);
         } catch (\Throwable $e) {
-            $response = new ErrorResponse($request->id, new ServerException());
             $this->logger->critical('[jsonrpc] Error during dispatching a request', ['exception' => $e]);
+            $response = new ErrorResponse($request->id, new ServerException());
         }
 
         return $response;
