@@ -206,7 +206,7 @@ class JsonRpc implements TransportMessageObserver
     private function handleRequest(Request $request): \Generator
     {
         try {
-            $result = yield $this->dispatcher->dispatchRequest($request->method, $request->params);
+            $result = yield $this->dispatcher->dispatchRequest($request->method, $request->params ?? []);
 
             $response = new ResultResponse($request->id, $result);
         } catch (JsonRpcException $e) {
@@ -223,7 +223,7 @@ class JsonRpc implements TransportMessageObserver
     private function handleNotification(Notification $notification): \Generator
     {
         try {
-            yield $this->dispatcher->dispatchNotification($notification->method, $notification->params);
+            yield $this->dispatcher->dispatchNotification($notification->method, $notification->params ?? []);
         } catch (\Throwable $e) {
             $this->logger->critical('[jsonrpc] Error during dispatching a notification', ['exception' => $e]);
         }

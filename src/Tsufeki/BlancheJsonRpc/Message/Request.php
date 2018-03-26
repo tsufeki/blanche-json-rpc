@@ -10,9 +10,9 @@ class Request extends Message
     public $method;
 
     /**
-     * @var array|\stdClass
+     * @var array|\stdClass|null
      */
-    public $params = [];
+    public $params;
 
     /**
      * @var string|int|float|null

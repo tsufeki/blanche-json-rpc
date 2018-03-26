@@ -10,7 +10,7 @@ class Notification extends Message
     public $method;
 
     /**
-     * @var array|\stdClass
+     * @var array|\stdClass|null
      */
-    public $params = [];
+    public $params;
 }
