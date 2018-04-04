@@ -5,7 +5,7 @@ namespace Tsufeki\BlancheJsonRpc\Message;
 class ResultResponse extends Response
 {
     /**
-     * @var mixed
+     * @var mixed|null
      */
     public $result;
 

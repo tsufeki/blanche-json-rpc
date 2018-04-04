@@ -15,7 +15,7 @@ class MapperFactory
             ->addDumper(new ExceptionDumper())
             ->addLoader(new ExceptionLoader())
             ->throwOnUnknownProperty(true)
-            ->throwOnMissingProperty(false)
+            ->throwOnMissingProperty(true)
             ->getMapper();
     }
 }
