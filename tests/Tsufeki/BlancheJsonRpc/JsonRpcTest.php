@@ -214,6 +214,23 @@ class JsonRpcTest extends TestCase
         });
     }
 
+    public function test_responds_with_error_on_missing_method()
+    {
+        ReactKernel::start(function () {
+            $transport = $this->createMock(Transport::class);
+            $transport
+                ->expects($this->once())
+                ->method('send')
+                ->with(new JsonMatches('{"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}'))
+                ->willReturn((function () { yield; })());
+
+            $dispatcher = $this->createMock(Dispatcher::class);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
+
+            yield $rpc->receive('{"jsonrpc": "2.0"}');
+        });
+    }
+
     public function test_receives_batch()
     {
         ReactKernel::start(function () {

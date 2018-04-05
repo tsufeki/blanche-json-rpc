@@ -11,6 +11,8 @@ class Notification extends Message
 
     /**
      * @var array|\stdClass|null
+     *
+     * @optional
      */
     public $params;
 }

@@ -161,10 +161,10 @@ class JsonRpc implements TransportMessageObserver
     private function handleMessage($messageData): \Generator
     {
         $messageType = implode('|', [
+            ErrorResponse::class,
+            ResultResponse::class,
             Notification::class,
             Request::class,
-            ResultResponse::class,
-            ErrorResponse::class,
         ]);
 
         try {

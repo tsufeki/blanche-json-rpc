@@ -38,15 +38,15 @@ class ExceptionLoader implements Loader
         }
 
         if (!is_object($data) || !($data instanceof \stdClass)) {
-            throw new TypeMismatchException('object', $data);
+            throw new TypeMismatchException('object', $data, $context);
         }
 
         if (!isset($data->code) || !is_int($data->code)) {
-            throw new TypeMismatchException('int', $data->code);
+            throw new TypeMismatchException('int', $data->code, $context);
         }
 
         if (!isset($data->message) || !is_string($data->message)) {
-            throw new TypeMismatchException('string', $data->message);
+            throw new TypeMismatchException('string', $data->message, $context);
         }
 
         $exceptionClass = JsonRpcException::class;

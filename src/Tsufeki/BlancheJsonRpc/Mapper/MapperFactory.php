@@ -16,6 +16,8 @@ class MapperFactory
             ->addLoader(new ExceptionLoader())
             ->throwOnUnknownProperty(true)
             ->throwOnMissingProperty(true)
+            ->setGuessRequiredProperties(false)
+            ->setUseRequiredPhpdocTag(true)
             ->getMapper();
     }
 }
