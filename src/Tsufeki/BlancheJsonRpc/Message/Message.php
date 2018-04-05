@@ -4,8 +4,10 @@ namespace Tsufeki\BlancheJsonRpc\Message;
 
 class Message
 {
+    const VERSION = '2.0';
+
     /**
      * @var string
      */
-    public $jsonrpc = '2.0';
+    public $jsonrpc = self::VERSION;
 }
