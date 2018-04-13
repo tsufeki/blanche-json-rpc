@@ -13,9 +13,9 @@ class JsonRpcException extends \Exception
      */
     protected $data;
 
-    public function __construct(string $message = null, int $code = null, $data = null)
+    public function __construct(string $message = null, int $code = null, $data = null, \Throwable $previous = null)
     {
-        parent::__construct($message ?? static::MESSAGE, $code ?? static::CODE_MAX);
+        parent::__construct($message ?? static::MESSAGE, $code ?? static::CODE_MAX, $previous);
         $this->data = $data;
     }
 

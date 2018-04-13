@@ -23,7 +23,7 @@ class MapperInvoker implements Invoker
         try {
             $mappedArgs = $this->mapper->loadArguments($args, $callable);
         } catch (MapperException $e) {
-            throw new InvalidParamsException();
+            throw new InvalidParamsException(null, null, null, $e);
         }
 
         $result = $callable(...$mappedArgs);
