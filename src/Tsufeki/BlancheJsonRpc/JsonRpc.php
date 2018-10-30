@@ -214,10 +214,10 @@ class JsonRpc implements TransportMessageObserver
 
             $response = new ResultResponse($request->id, $result);
         } catch (JsonRpcException $e) {
-            $this->logger->notice('[jsonrpc] Error during dispatching a request', ['exception' => $e]);
+            $this->logger->notice("[jsonrpc] Error during dispatching request $request->method", ['exception' => $e]);
             $response = new ErrorResponse($request->id, $e);
         } catch (\Throwable $e) {
-            $this->logger->critical('[jsonrpc] Error during dispatching a request', ['exception' => $e]);
+            $this->logger->critical("[jsonrpc] Error during dispatching request $request->method", ['exception' => $e]);
             $response = new ErrorResponse($request->id, new ServerException());
         }
 
@@ -229,7 +229,7 @@ class JsonRpc implements TransportMessageObserver
         try {
             yield $this->dispatcher->dispatchNotification($notification->method, $notification->params ?? []);
         } catch (\Throwable $e) {
-            $this->logger->critical('[jsonrpc] Error during dispatching a notification', ['exception' => $e]);
+            $this->logger->critical("[jsonrpc] Error during dispatching notification $notification->method", ['exception' => $e]);
         }
     }
 
