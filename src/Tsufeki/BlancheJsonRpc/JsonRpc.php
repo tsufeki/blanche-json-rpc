@@ -14,6 +14,7 @@ use Tsufeki\BlancheJsonRpc\Exception\InvalidRequestException;
 use Tsufeki\BlancheJsonRpc\Exception\JsonException;
 use Tsufeki\BlancheJsonRpc\Exception\JsonRpcException;
 use Tsufeki\BlancheJsonRpc\Exception\ParseException;
+use Tsufeki\BlancheJsonRpc\Exception\RequestCancelledException;
 use Tsufeki\BlancheJsonRpc\Exception\ServerException;
 use Tsufeki\BlancheJsonRpc\Mapper\MapperFactory;
 use Tsufeki\BlancheJsonRpc\Message\ErrorResponse;
@@ -55,9 +56,18 @@ class JsonRpc implements TransportMessageObserver
     private $logger;
 
     /**
+     * Active outgoing requests.
+     *
      * @var Listener[]
      */
     private $pendingRequests = [];
+
+    /**
+     * Active incoming requests.
+     *
+     * @var Listener[]
+     */
+    private $ongoingRequests = [];
 
     public function __construct(
         Transport $transport,
@@ -210,15 +220,20 @@ class JsonRpc implements TransportMessageObserver
     private function handleRequest(Request $request): \Generator
     {
         try {
+            $this->ongoingRequests[$request->id] = yield Recoil::strand();
             $result = yield $this->dispatcher->dispatchRequest($request->method, $request->params ?? []);
-
             $response = new ResultResponse($request->id, $result);
+        } catch (RequestCancelledException $e) {
+            $this->logger->debug("[jsonrpc] Cancelled request $request->method");
+            $response = new ErrorResponse($request->id, $e);
         } catch (JsonRpcException $e) {
             $this->logger->notice("[jsonrpc] Error during dispatching request $request->method", ['exception' => $e]);
             $response = new ErrorResponse($request->id, $e);
         } catch (\Throwable $e) {
             $this->logger->critical("[jsonrpc] Error during dispatching request $request->method", ['exception' => $e]);
             $response = new ErrorResponse($request->id, new ServerException());
+        } finally {
+            unset($this->ongoingRequests[$request->id]);
         }
 
         return $response;
@@ -231,6 +246,20 @@ class JsonRpc implements TransportMessageObserver
         } catch (\Throwable $e) {
             $this->logger->critical("[jsonrpc] Error during dispatching notification $notification->method", ['exception' => $e]);
         }
+    }
+
+    /**
+     * Cancel incoming request by throwing exception into its strand.
+     */
+    public function cancelIncomingRequest($requestId, RequestCancelledException $exception): \Generator
+    {
+        $strand = $this->ongoingRequests[$requestId] ?? null;
+        if ($strand !== null) {
+            $strand->throw($exception);
+        }
+
+        return;
+        yield;
     }
 
     public static function create(

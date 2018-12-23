@@ -5,8 +5,10 @@ namespace Tests\Tsufeki\BlancheJsonRpc;
 use PHPUnit\Framework\Constraint\JsonMatches;
 use PHPUnit\Framework\TestCase;
 use Recoil\React\ReactKernel;
+use Recoil\Recoil;
 use Tsufeki\BlancheJsonRpc\Dispatcher\Dispatcher;
 use Tsufeki\BlancheJsonRpc\Exception\JsonRpcException;
+use Tsufeki\BlancheJsonRpc\Exception\RequestCancelledException;
 use Tsufeki\BlancheJsonRpc\JsonRpc;
 use Tsufeki\BlancheJsonRpc\Mapper\MapperFactory;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
@@ -290,6 +292,32 @@ class JsonRpcTest extends TestCase
             $rpc = $this->getJsonRpc($transport, $dispatcher);
 
             yield $rpc->receive('{"jsonrpc": "2.0", "id": 7, "method": "fooBar", "params": [1, 2]}');
+        });
+    }
+
+    public function test_cancels_request()
+    {
+        ReactKernel::start(function () {
+            $transport = $this->createMock(Transport::class);
+            $transport
+                ->expects($this->once())
+                ->method('send')
+                ->with(new JsonMatches('{"jsonrpc": "2.0", "id": 7, "error": {"code": 0, "message": "Request cancelled"}}'))
+                ->willReturn((function () { yield; })());
+
+            $dispatcher = $this->createMock(Dispatcher::class);
+            $dispatcher
+                ->expects($this->once())
+                ->method('dispatchRequest')
+                ->willReturn((function () {
+                    yield Recoil::suspend();
+                })());
+
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
+
+            yield Recoil::execute($rpc->receive('{"jsonrpc": "2.0", "id": 7, "method": "fooBar", "params": [1, 2]}'));
+            yield;
+            yield $rpc->cancelIncomingRequest(7, new RequestCancelledException());
         });
     }
 }

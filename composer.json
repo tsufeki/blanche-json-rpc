@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+        "php": ">=7.1",
         "recoil/api": "^1.0",
         "tsufeki/kayo-json-mapper": "^0.3.0",
         "psr/log": "^1.0"
