@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Tsufeki\BlancheJsonRpc\Dispatcher\MapperInvoker;
 use Tsufeki\BlancheJsonRpc\Dispatcher\MethodRegistry;
 use Tsufeki\BlancheJsonRpc\Dispatcher\MethodRegistryDispatcher;
+use Tsufeki\BlancheJsonRpc\Exception\RequestCancelledException;
 use Tsufeki\BlancheJsonRpc\Mapper\MapperFactory;
 use Tsufeki\BlancheJsonRpc\Transport\Transport;
 use Tsufeki\KayoJsonMapper\Mapper;
@@ -52,6 +53,14 @@ class MappedJsonRpc
     public function notify(string $method, $args): \Generator
     {
         yield $this->rpc->notify($method, $this->mapper->dump($args));
+    }
+
+    /**
+     * Cancel incoming request by throwing exception into its strand.
+     */
+    public function cancelIncomingRequest($requestId, RequestCancelledException $exception): \Generator
+    {
+        return $this->rpc->cancelIncomingRequest($requestId, $exception);
     }
 
     public static function create(
