@@ -54,6 +54,8 @@ class JsonRpcTest extends TestCase
     {
         ReactKernel::start(function () {
             $transport = $this->createMock(Transport::class);
+            $dispatcher = $this->createMock(Dispatcher::class);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
             $transport
                 ->expects($this->once())
                 ->method('send')
@@ -61,9 +63,6 @@ class JsonRpcTest extends TestCase
                 ->willReturn((function () use (&$rpc) {
                     yield $rpc->receive('{"jsonrpc": "2.0", "id": 1, "result": 42}');
                 })());
-
-            $dispatcher = $this->createMock(Dispatcher::class);
-            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
             $result = yield $rpc->call('foo', [1, 2]);
 
@@ -75,6 +74,8 @@ class JsonRpcTest extends TestCase
     {
         ReactKernel::start(function () {
             $transport = $this->createMock(Transport::class);
+            $dispatcher = $this->createMock(Dispatcher::class);
+            $rpc = $this->getJsonRpc($transport, $dispatcher);
             $transport
                 ->expects($this->once())
                 ->method('send')
@@ -82,9 +83,6 @@ class JsonRpcTest extends TestCase
                 ->willReturn((function () use (&$rpc) {
                     yield $rpc->receive('{"jsonrpc": "2.0", "id": 1, "error": {"code": 84, "message": "bar"}}');
                 })());
-
-            $dispatcher = $this->createMock(Dispatcher::class);
-            $rpc = $this->getJsonRpc($transport, $dispatcher);
 
             $this->expectException(JsonRpcException::class);
             yield $rpc->call('foo', [1, 2]);

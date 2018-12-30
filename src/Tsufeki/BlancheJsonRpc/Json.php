@@ -9,7 +9,7 @@ final class Json
     public static function encode($value): string
     {
         $result = json_encode($value);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (json_last_error() !== JSON_ERROR_NONE || !is_string($result)) {
             throw new JsonException(json_last_error_msg());
         }
 

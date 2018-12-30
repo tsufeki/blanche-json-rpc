@@ -10,16 +10,15 @@
     ],
     "require": {
         "php": ">=7.1",
-        "recoil/api": "^1.0",
-        "tsufeki/kayo-json-mapper": "^0.3.0",
-        "psr/log": "^1.0"
+        "recoil/api": "^1",
+        "tsufeki/kayo-json-mapper": "^0.3",
+        "psr/log": "^1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.5",
-        "phpstan/phpstan": "^0.9",
-        "phpstan/phpstan-phpunit": "^0.9",
-        "php-coveralls/php-coveralls": "^2.0",
-        "recoil/react": "^1.0"
+        "phpunit/phpunit": "^7",
+        "phpstan/phpstan": "^0.10",
+        "phpstan/phpstan-phpunit": "^0.10",
+        "recoil/react": "^1"
     },
     "autoload": {
         "psr-4": {

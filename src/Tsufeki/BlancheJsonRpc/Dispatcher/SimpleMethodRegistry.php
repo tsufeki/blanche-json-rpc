@@ -77,13 +77,27 @@ class SimpleMethodRegistry implements MethodRegistry
     public function addProvider(MethodProvider $provider): self
     {
         foreach ($provider->getRequests() as $rpcMethod => $phpMethod) {
-            $this->setMethodForRequest($rpcMethod, [$provider, $phpMethod]);
+            $callable = [$provider, $phpMethod];
+            if (!is_callable($callable)) {
+                $class = get_class($provider);
+
+                throw new \LogicException("Invalid method $class::$phpMethod");
+            }
+
+            $this->setMethodForRequest($rpcMethod, $callable);
         }
 
         foreach ($provider->getNotifications() as $rpcMethod => $phpMethods) {
             $phpMethods = is_array($phpMethods) ? $phpMethods : [$phpMethods];
             foreach ($phpMethods as $phpMethod) {
-                $this->addMethodForNotification($rpcMethod, [$provider, $phpMethod]);
+                $callable = [$provider, $phpMethod];
+                if (!is_callable($callable)) {
+                    $class = get_class($provider);
+
+                    throw new \LogicException("Invalid method $class::$phpMethod");
+                }
+
+                $this->addMethodForNotification($rpcMethod, $callable);
             }
         }
 

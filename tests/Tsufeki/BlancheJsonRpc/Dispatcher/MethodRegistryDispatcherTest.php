@@ -67,6 +67,7 @@ class MethodRegistryDispatcherTest extends TestCase
                     yield;
                 });
 
+            /** @var int */
             $callCounter = 0;
             $methodRegistryDispatcher = new MethodRegistryDispatcher($methodRegistry, $invoker);
 
