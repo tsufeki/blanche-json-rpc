@@ -4,6 +4,7 @@ php:
     - '7.1'
     - '7.2'
     - '7.3'
+    - '7.4'
 
 cache:
     directories:
@@ -14,4 +15,4 @@ install:
 
 script:
     - ./vendor/bin/phpstan analyze --configuration=phpstan.neon --level=max --no-interaction --no-progress src/ tests/
-    - ./vendor/bin/phpunit
+    - php -derror_reporting=E_ALL ./vendor/bin/phpunit

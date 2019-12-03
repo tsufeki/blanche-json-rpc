@@ -6,5 +6,4 @@ parameters:
     excludes_analyse:
         - %rootDir%/../../../tests/Tsufeki/BlancheJsonRpc/Fixtures/*
     ignoreErrors:
-        - '~Parameter #2 \$type of method Tsufeki\\BlancheJsonRpc\\.*Loader::load\(\) expects phpDocumentor\\Reflection\\Type, phpDocumentor\\Reflection\\Type\|null given~'
-        - '~Parameter #2 \$callable of method Tsufeki\\BlancheJsonRpc\\Dispatcher\\SimpleMethodRegistry::.*\(\) expects callable, array\(Tests\\Tsufeki\\BlancheJsonRpc\\Fixtures\\SpecExampleMethods, mixed\) given~'
+        - '~Parameter #2 \$callable of method Tsufeki\\BlancheJsonRpc\\Dispatcher\\SimpleMethodRegistry::.*\(\) expects callable\(\): mixed, array\(Tests\\Tsufeki\\BlancheJsonRpc\\Fixtures\\SpecExampleMethods, mixed\) given~'
